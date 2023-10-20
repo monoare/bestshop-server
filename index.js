@@ -1,3 +1,4 @@
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -8,7 +9,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qfcfzds.mongodb.net/?retryWrites=true&w=majority`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -24,12 +24,42 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const bestShop = client.db("BestShopDB").collection("Brand");
+    const shopCollection = client.db("shopDB").collection("product");
 
-    app.post("/brands", async (req, res) => {
-      const brandName = req.body;
-      console.log(brandName);
-      const result = await bestShop.insertOne(brandName);
+    // add to cart
+    const cartCollection = client.db("shopDB").collection("cart");
+
+    app.get("/product", async (req, res) => {
+      const cursor = shopCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.get("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await shopCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/product", async (req, res) => {
+      const newProduct = req.body;
+      console.log(newProduct);
+      const result = await shopCollection.insertOne(newProduct);
+      res.send(result);
+    });
+
+    // cart related apis
+
+    app.get("/cart", async (req, res) => {
+      const cursor = cartCollection.find();
+      const carts = await cursor.toArray();
+      res.send(carts);
+    });
+
+    app.post("/cart", async (req, res) => {
+      const cart = req.body;
+      console.log(cart);
+      const result = await cartCollection.insertOne(cart);
       res.send(result);
     });
 
@@ -40,7 +70,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
