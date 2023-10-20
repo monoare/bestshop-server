@@ -65,6 +65,14 @@ async function run() {
       res.send(result);
     });
 
+    // Delete data from database
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await shopCollection.deleteOne(query);
+      result.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
