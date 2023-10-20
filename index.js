@@ -48,14 +48,16 @@ async function run() {
       res.send(result);
     });
 
-    // cart related apis
+    // shop cart related apis
 
+    // read data from database
     app.get("/cart", async (req, res) => {
       const cursor = cartCollection.find();
       const carts = await cursor.toArray();
       res.send(carts);
     });
 
+    // Send data to database
     app.post("/cart", async (req, res) => {
       const cart = req.body;
       console.log(cart);
