@@ -24,9 +24,10 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    // add data to product collection
     const shopCollection = client.db("shopDB").collection("product");
 
-    // add to cart
+    // add data to cart collection
     const cartCollection = client.db("shopDB").collection("cart");
 
     app.get("/product", async (req, res) => {
@@ -41,10 +42,36 @@ async function run() {
       res.send(result);
     });
 
+    // create the collection of product
     app.post("/product", async (req, res) => {
       const newProduct = req.body;
       console.log(newProduct);
       const result = await shopCollection.insertOne(newProduct);
+      res.send(result);
+    });
+
+    // Update the product data
+    app.put("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedCoffee = req.body;
+
+      const product = {
+        $set: {
+          name: updatedCoffee.name,
+          image1: updatedCoffee.image1,
+          image2: updatedCoffee.image2,
+          image3: updatedCoffee.image3,
+          brand: updatedCoffee.brand,
+          type: updatedCoffee.type,
+          price: updatedCoffee.price,
+          rating: updatedCoffee.rating,
+          description: updatedCoffee.description,
+        },
+      };
+
+      const result = await shopCollection.updateOne(filter, product, options);
       res.send(result);
     });
 
